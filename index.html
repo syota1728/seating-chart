@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>席替えシステム</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f5f0e8;
+    --paper: #fffef9;
+    --ink: #1a1410;
+    --accent: #c0392b;
+    --accent2: #2c6e49;
+    --muted: #8a7f72;
+    --border: #c8bfb0;
+    --desk-empty: #e8e0d4;
+    --desk-filled: #fff;
+    --shadow: rgba(26,20,16,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  /* ── ヘッダー ── */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 900;
+    letter-spacing: .08em;
+    position: relative;
+    display: inline-block;
+  }
+  header h1::after {
+    content: '';
+    display: block;
+    height: 3px;
+    background: var(--accent);
+    margin-top: 4px;
+    border-radius: 2px;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 6px;
+    letter-spacing: .04em;
+  }
+
+  /* ── ツールバー ── */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    padding: 8px 18px;
+    border-radius: 4px;
+    border: 2px solid var(--ink);
+    cursor: pointer;
+    transition: all .15s;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .btn:hover { background: var(--ink); color: var(--paper); }
+  .btn.danger { border-color: var(--accent); color: var(--accent); }
+  .btn.danger:hover { background: var(--accent); color: #fff; }
+  .btn.success { border-color: var(--accent2); color: var(--accent2); }
+  .btn.success:hover { background: var(--accent2); color: #fff; }
+
+  /* ── 教室レイアウト ── */
+  .classroom-wrap {
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .classroom {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 560px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* 黒板ラベル */
+  .blackboard {
+    background: var(--ink);
+    color: var(--paper);
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .2em;
+    padding: 6px;
+    border-radius: 2px;
+    margin-bottom: 4px;
+  }
+
+  .row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  /* 追加列（4列・最後行）用ラッパー */
+  .row-extra {
+    justify-content: center;
+    /* 8列分の幅に合わせて中央4列だけ表示 */
+  }
+
+  /* ── 机 ── */
+  .desk {
+    position: relative;
+    width: 82px;
+    height: 68px;
+    background: var(--desk-empty);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+    flex-shrink: 0;
+  }
+  .desk:hover { border-color: var(--ink); box-shadow: 3px 3px 0 var(--shadow); }
+  .desk.filled {
+    background: var(--desk-filled);
+    border-color: var(--ink);
+  }
+  .desk .num-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    position: absolute;
+    top: 4px;
+    left: 6px;
+  }
+  .desk .name {
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    padding: 0 4px;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+  .desk .empty-hint {
+    font-size: 11px;
+    color: var(--border);
+  }
+  .desk.highlight {
+    animation: pulse .5s ease;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(192,57,43,.5); }
+    100% { box-shadow: 0 0 0 8px rgba(192,57,43,0); }
+  }
+
+  /* ── モーダル ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,20,16,.45);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 6px;
+    padding: 28px 28px 22px;
+    width: min(340px, 90vw);
+    box-shadow: 6px 6px 0 var(--shadow);
+    animation: slideIn .2s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(-16px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+  }
+  .modal h2 { font-size: 16px; font-weight: 900; margin-bottom: 16px; }
+  .modal label { font-size: 12px; font-weight: 700; letter-spacing: .04em; display: block; margin-bottom: 4px; color: var(--muted); }
+  .modal input[type=number],
+  .modal input[type=text] {
+    font-family: inherit;
+    font-size: 15px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--ink);
+    margin-bottom: 14px;
+    transition: border-color .15s;
+  }
+  .modal input:focus { outline: none; border-color: var(--ink); }
+  .modal .preview {
+    font-size: 13px;
+    min-height: 20px;
+    margin-bottom: 14px;
+    padding: 6px 10px;
+    background: var(--bg);
+    border-radius: 4px;
+    border: 1px dashed var(--border);
+    color: var(--accent2);
+    font-weight: 700;
+  }
+  .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* ── 名簿パネル ── */
+  .panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0;
+    width: min(320px, 100vw);
+    height: 100vh;
+    background: var(--paper);
+    border-left: 2px solid var(--ink);
+    z-index: 200;
+    flex-direction: column;
+    box-shadow: -4px 0 16px var(--shadow);
+    animation: slideR .2s ease;
+  }
+  @keyframes slideR {
+    from { transform: translateX(40px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  .panel.open { display: flex; }
+  .panel-header {
+    padding: 18px 16px 12px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-header h2 { font-size: 15px; font-weight: 900; }
+  .panel-close {
+    background: none; border: none;
+    font-size: 22px; cursor: pointer; color: var(--muted);
+    line-height: 1;
+  }
+  .panel-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
+  .panel textarea {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    width: 100%;
+    height: calc(100vh - 220px);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 10px;
+    resize: vertical;
+  }
+  .panel textarea:focus { outline: none; border-color: var(--ink); }
+  .panel-hint { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.6; }
+  .panel-footer { padding: 12px 16px; border-top: 2px solid var(--border); display: flex; gap: 8px; }
+
+  /* ── 統計バー ── */
+  .stats {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 20px;
+    letter-spacing: .05em;
+  }
+  .stats span { color: var(--ink); font-weight: 700; }
+
+  /* ── 印刷用 ── */
+  @media print {
+    body { background: #fff; padding: 8px; }
+    .toolbar, .modal-overlay, .panel { display: none !important; }
+    .desk { page-break-inside: avoid; }
+    header p { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🪑 席替えシステム</h1>
+  <p>机をクリックして番号を入力 → 名前が自動で入ります</p>
+</header>
+
+<div class="toolbar">
+  <button class="btn success" onclick="openPanel()">📋 名簿を編集</button>
+  <button class="btn" onclick="window.print()">🖨 印刷</button>
+  <button class="btn danger" onclick="confirmReset()">🗑 席をリセット</button>
+</div>
+
+<div class="classroom-wrap">
+  <div class="classroom" id="classroom">
+    <div class="blackboard">― 黒 板 ―</div>
+    <!-- JSで生成 -->
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<!-- 入力モーダル -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">番号を入力</h2>
+    <label>出席番号</label>
+    <input type="number" id="num-input" min="1" max="28" placeholder="例: 12" oninput="previewName()">
+    <label>名前（確認）</label>
+    <div class="preview" id="name-preview">—</div>
+    <div class="modal-buttons">
+      <button class="btn danger" onclick="clearSeat()">クリア</button>
+      <button class="btn" onclick="closeModal()">キャンセル</button>
+      <button class="btn success" onclick="confirmSeat()">決定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 名簿パネル -->
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <h2>📋 名簿（番号 → 名前）</h2>
+    <button class="panel-close" onclick="closePanel()">×</button>
+  </div>
+  <div class="panel-body">
+    <p class="panel-hint">
+      1行につき「番号,名前」の形式で入力してください。<br>
+      例: <b>1,山田太郎</b><br>
+      Excelからコピペも可能です（タブ区切り対応）。
+    </p>
+    <textarea id="roster-input" placeholder="1,山田太郎&#10;2,鈴木花子&#10;3,田中次郎&#10;..."></textarea>
+  </div>
+  <div class="panel-footer">
+    <button class="btn success" style="flex:1" onclick="saveRoster()">保存する</button>
+    <button class="btn" onclick="closePanel()">閉じる</button>
+  </div>
+</div>
+
+<script>
+// ── 席のレイアウト定義 ──
+// layout: 各行の列数配列（前→後ろ）
+// 横8×縦3 = 24席、追加1列（中央4列）= 4席 → 計28席
+const ROWS = [
+  { cols: 8 },  // 1行目（前）
+  { cols: 8 },  // 2行目
+  { cols: 8 },  // 3行目（後ろ）
+  { cols: 4, offset: 2 }, // 追加行（中4列のみ）
+];
+
+// 席オブジェクト: { id, row, col, num(出席番号 or null) }
+let seats = [];
+let roster = {}; // { "1": "山田太郎", ... }
+let currentSeatId = null;
+
+// ── 初期化 ──
+function init() {
+  loadRoster();
+  loadSeats();
+  buildGrid();
+  renderAll();
+  updateStats();
+}
+
+// ── グリッド構築 ──
+function buildGrid() {
+  const classroom = document.getElementById('classroom');
+  // 黒板以外を削除
+  while (classroom.children.length > 1) classroom.removeChild(classroom.lastChild);
+
+  let seatIdx = 0;
+  ROWS.forEach((rowDef, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'row';
+    if (rowDef.offset) rowEl.classList.add('row-extra');
+
+    // オフセット用スペーサー
+    if (rowDef.offset) {
+      const spacer = document.createElement('div');
+      spacer.style.width = (rowDef.offset * (82 + 8)) - 8 + 'px';
+      spacer.style.flexShrink = '0';
+      rowEl.appendChild(spacer);
+    }
+
+    for (let ci = 0; ci < rowDef.cols; ci++) {
+      if (seatIdx >= seats.length) break;
+      const seat = seats[seatIdx++];
+      const desk = document.createElement('div');
+      desk.className = 'desk';
+      desk.id = 'desk-' + seat.id;
+      desk.onclick = () => openModal(seat.id);
+      rowEl.appendChild(desk);
+    }
+
+    // 右スペーサー（オフセットあり）
+    if (rowDef.offset) {
+      const spacer2 = document.createElement('div');
+      spacer2.style.width = (rowDef.offset * (82 + 8)) - 8 + 'px';
+      spacer2.style.flexShrink = '0';
+      rowEl.appendChild(spacer2);
+    }
+
+    classroom.appendChild(rowEl);
+  });
+}
+
+// ── 席データ初期化 ──
+function initSeats() {
+  seats = [];
+  let id = 0;
+  ROWS.forEach((rowDef, ri) => {
+    for (let ci = 0; ci < rowDef.cols; ci++) {
+      seats.push({ id: id++, row: ri, col: ci + (rowDef.offset || 0), num: null });
+    }
+  });
+}
+
+// ── レンダリング ──
+function renderAll() {
+  seats.forEach(seat => renderSeat(seat));
+}
+
+function renderSeat(seat) {
+  const desk = document.getElementById('desk-' + seat.id);
+  if (!desk) return;
+  desk.innerHTML = '';
+  if (seat.num !== null) {
+    desk.classList.add('filled');
+    const badge = document.createElement('div');
+    badge.className = 'num-badge';
+    badge.textContent = '#' + seat.num;
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = roster[String(seat.num)] || '番号' + seat.num;
+    desk.appendChild(badge);
+    desk.appendChild(name);
+  } else {
+    desk.classList.remove('filled');
+    const hint = document.createElement('div');
+    hint.className = 'empty-hint';
+    hint.textContent = '空席';
+    desk.appendChild(hint);
+  }
+}
+
+// ── モーダル ──
+function openModal(seatId) {
+  currentSeatId = seatId;
+  const seat = seats[seatId];
+  document.getElementById('modal-title').textContent =
+    `${seatId + 1}番の机 （${seat.num !== null ? '#' + seat.num + ' ' + (roster[String(seat.num)] || '') : '空席'}）`;
+  const input = document.getElementById('num-input');
+  input.value = seat.num !== null ? seat.num : '';
+  previewName();
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => input.focus(), 50);
+  input.onkeydown = e => { if (e.key === 'Enter') confirmSeat(); if (e.key === 'Escape') closeModal(); };
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  currentSeatId = null;
+}
+
+function previewName() {
+  const val = document.getElementById('num-input').value.trim();
+  const preview = document.getElementById('name-preview');
+  if (!val) { preview.textContent = '—'; return; }
+  const n = parseInt(val);
+  if (isNaN(n) || n < 1 || n > 28) { preview.textContent = '⚠ 1〜28の番号を入力'; return; }
+  // 重複チェック
+  const dup = seats.find(s => s.id !== currentSeatId && s.num === n);
+  if (dup) { preview.textContent = `⚠ #${n} はすでに${dup.id + 1}番の机に配置済み`; return; }
+  preview.textContent = roster[String(n)] ? `#${n} ${roster[String(n)]}` : `#${n}（名前未登録）`;
+}
+
+function confirmSeat() {
+  const val = document.getElementById('num-input').value.trim();
+  if (!val) { clearSeat(); return; }
+  const n = parseInt(val);
+  if (isNaN(n) || n < 1 || n > 28) return;
+  const dup = seats.find(s => s.id !== currentSeatId && s.num === n);
+  if (dup) return;
+  seats[currentSeatId].num = n;
+  renderSeat(seats[currentSeatId]);
+  animateDesk(currentSeatId);
+  saveSeats();
+  updateStats();
+  closeModal();
+}
+
+function clearSeat() {
+  if (currentSeatId === null) return;
+  seats[currentSeatId].num = null;
+  renderSeat(seats[currentSeatId]);
+  saveSeats();
+  updateStats();
+  closeModal();
+}
+
+function animateDesk(id) {
+  const desk = document.getElementById('desk-' + id);
+  desk.classList.remove('highlight');
+  void desk.offsetWidth;
+  desk.classList.add('highlight');
+}
+
+// ── 名簿パネル ──
+function openPanel() {
+  // 現在の名簿をテキストエリアに反映
+  const lines = Object.keys(roster).sort((a,b)=>+a-+b).map(k => `${k},${roster[k]}`);
+  document.getElementById('roster-input').value = lines.join('\n');
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+}
+
+function saveRoster() {
+  const text = document.getElementById('roster-input').value;
+  const newRoster = {};
+  text.split('\n').forEach(line => {
+    line = line.trim();
+    if (!line) return;
+    // タブ区切りにも対応（Excelコピペ）
+    const sep = line.includes('\t') ? '\t' : ',';
+    const idx = line.indexOf(sep);
+    if (idx < 1) return;
+    const num = line.slice(0, idx).trim();
+    const name = line.slice(idx + 1).trim();
+    if (num && name) newRoster[num] = name;
+  });
+  roster = newRoster;
+  saveRosterStorage();
+  renderAll();
+  updateStats();
+  closePanel();
+}
+
+// ── 統計 ──
+function updateStats() {
+  const filled = seats.filter(s => s.num !== null).length;
+  document.getElementById('stats').innerHTML =
+    `着席: <span>${filled}</span> / ${seats.length} 席`;
+}
+
+// ── リセット ──
+function confirmReset() {
+  if (!confirm('全ての席の割り当てをリセットしますか？\n（名簿はそのまま保持されます）')) return;
+  seats.forEach(s => s.num = null);
+  renderAll();
+  saveSeats();
+  updateStats();
+}
+
+// ── ローカルストレージ ──
+function saveSeats() {
+  localStorage.setItem('seats_v1', JSON.stringify(seats.map(s => s.num)));
+}
+
+function loadSeats() {
+  initSeats();
+  try {
+    const saved = JSON.parse(localStorage.getItem('seats_v1') || 'null');
+    if (Array.isArray(saved)) {
+      saved.forEach((num, i) => { if (i < seats.length) seats[i].num = num; });
+    }
+  } catch(e) {}
+}
+
+function saveRosterStorage() {
+  localStorage.setItem('roster_v1', JSON.stringify(roster));
+}
+
+function loadRoster() {
+  try {
+    roster = JSON.parse(localStorage.getItem('roster_v1') || '{}');
+  } catch(e) { roster = {}; }
+}
+
+// クリックエリア外でモーダルを閉じる
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+init();
+</script>
+</body>
+</html>
