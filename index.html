@@ -42,7 +42,7 @@
     content: ''; display: block; height: 3px;
     background: var(--accent); margin-top: 4px; border-radius: 2px;
   }
-  header p { color: var(--muted); font-size: 12px; margin-top: 6px; letter-spacing: .04em; }
+  header p { color: var(--muted); font-size: 12px; margin-top: 6px; }
 
   /* ── レイアウト設定 ── */
   .layout-bar {
@@ -51,108 +51,26 @@
     border-radius: 6px;
     padding: 14px 20px;
     margin: 0 auto 20px;
-    max-width: 640px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .layout-row {
+    max-width: 560px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
     gap: 12px;
   }
-  .layout-row.center { justify-content: center; }
   .field {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700;
   }
   .field input[type=number] {
     font-family: 'DM Mono', monospace;
-    font-size: 15px;
-    width: 64px;
-    padding: 5px 8px;
-    border: 2px solid var(--border);
-    border-radius: 4px;
-    background: var(--bg);
-    color: var(--ink);
-    text-align: center;
+    font-size: 15px; width: 64px; padding: 5px 8px;
+    border: 2px solid var(--border); border-radius: 4px;
+    background: var(--bg); color: var(--ink); text-align: center;
     transition: border-color .15s;
   }
   .field input[type=number]:focus { outline: none; border-color: var(--ink); }
-
-  /* 端数位置コントロール */
-  .offset-control {
-    display: none; /* 端数がある場合のみ表示 */
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    padding: 10px 14px;
-    background: var(--bg);
-    border-radius: 4px;
-    border: 1px dashed var(--border);
-  }
-  .offset-control.visible { display: flex; }
-  .offset-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .offset-slider-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 180px;
-  }
-  .offset-icon {
-    font-size: 14px;
-    cursor: pointer;
-    padding: 2px 6px;
-    border: 2px solid var(--border);
-    border-radius: 4px;
-    background: var(--paper);
-    transition: all .1s;
-    line-height: 1.4;
-    font-weight: 700;
-  }
-  .offset-icon:hover { border-color: var(--ink); background: var(--ink); color: var(--paper); }
-  input[type=range] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--border);
-    outline: none;
-    cursor: pointer;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: var(--ink);
-    cursor: pointer;
-    border: 2px solid var(--paper);
-    box-shadow: 0 0 0 1px var(--ink);
-  }
-  .offset-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    white-space: nowrap;
-    min-width: 48px;
-    text-align: center;
-  }
-
-  .layout-hint {
-    font-size: 11px;
-    color: var(--muted);
-    text-align: center;
-  }
+  .layout-hint { font-size: 11px; color: var(--muted); width: 100%; text-align: center; }
 
   /* ── ツールバー ── */
   .toolbar {
@@ -166,8 +84,8 @@
     transition: all .15s; background: var(--paper); color: var(--ink);
   }
   .btn:hover { background: var(--ink); color: var(--paper); }
-  .btn.danger { border-color: var(--accent); color: var(--accent); }
-  .btn.danger:hover { background: var(--accent); color: #fff; }
+  .btn.danger  { border-color: var(--accent); color: var(--accent); }
+  .btn.danger:hover  { background: var(--accent); color: #fff; }
   .btn.success { border-color: var(--accent2); color: var(--accent2); }
   .btn.success:hover { background: var(--accent2); color: #fff; }
   .btn.primary { border-color: var(--blue); color: var(--blue); }
@@ -181,32 +99,83 @@
     letter-spacing: .2em; padding: 6px; border-radius: 2px;
     margin: 0 auto 10px;
   }
-  .classroom { position: relative; margin: 0 auto; }
+
+  /* グリッドレイアウト */
+  .classroom {
+    display: grid;
+    margin: 0 auto;
+    /* grid-template-columns は JS で設定 */
+  }
+
+  /* ── セル（全グリッド枠） ── */
+  .cell {
+    width: 82px; height: 68px;
+    position: relative;
+  }
+
+  /* ── 空きセル：透明だがドロップ可 ── */
+  .cell.empty-cell {
+    /* 完全透明 */
+  }
+  /* ドラッグ中だけ空きセルをうっすら表示 */
+  .dragging-active .cell.empty-cell {
+    border: 2px dashed transparent;
+    border-radius: 4px;
+    background: transparent;
+    transition: background .1s, border-color .1s;
+  }
+  .dragging-active .cell.empty-cell.drop-hover {
+    border-color: var(--accent2);
+    background: rgba(44,110,73,.08);
+  }
 
   /* ── 机 ── */
   .desk {
     position: absolute;
-    width: 82px; height: 68px;
+    inset: 0;
     background: var(--desk-empty);
     border: 2px solid var(--border);
     border-radius: 4px;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     cursor: grab;
-    transition: border-color .1s, box-shadow .1s, background .1s;
     touch-action: none;
+    transition: border-color .1s, box-shadow .1s, background .1s;
+    z-index: 1;
   }
   .desk:hover { border-color: var(--ink); box-shadow: 3px 3px 0 var(--shadow); }
   .desk.filled { background: var(--desk-filled); border-color: var(--ink); }
-  .desk.extra-seat { border-style: dashed; }
-  .desk.dragging {
-    cursor: grabbing; opacity: .85;
-    box-shadow: 6px 6px 0 var(--shadow);
-    z-index: 999 !important;
-    border-color: var(--accent2); border-style: dashed;
-    transition: none;
+
+  /* ドラッグ中のゴースト（元の位置） */
+  .desk.drag-ghost {
+    opacity: 0;
+    pointer-events: none;
   }
-  .desk.drop-target { border-color: var(--accent2); border-style: dashed; background: #e8f5ec; }
+
+  /* 飛んでいる机（body直下に追加） */
+  .desk-floating {
+    position: fixed;
+    width: 82px; height: 68px;
+    background: var(--desk-filled);
+    border: 2px dashed var(--accent2);
+    border-radius: 4px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: .9;
+    box-shadow: 6px 6px 0 var(--shadow);
+  }
+  .desk-floating .num-badge {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--muted); position: absolute; top: 4px; left: 6px;
+  }
+  .desk-floating .name {
+    font-size: 13px; font-weight: 700; text-align: center;
+    padding: 0 4px; word-break: break-all; line-height: 1.3;
+  }
+  .desk-floating .empty-hint { font-size: 11px; color: var(--border); }
+
   .desk .num-badge {
     font-family: 'DM Mono', monospace; font-size: 10px;
     color: var(--muted); position: absolute; top: 4px; left: 6px;
@@ -224,7 +193,7 @@
     100% { box-shadow: 0 0 0 8px rgba(192,57,43,0); }
   }
 
-  /* ── モーダル共通 ── */
+  /* ── モーダル ── */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(26,20,16,.45); z-index: 1000;
@@ -239,8 +208,7 @@
   }
   .confirm-modal {
     background: var(--paper); border: 2px solid var(--accent);
-    border-radius: 6px; padding: 24px;
-    width: min(340px, 90vw);
+    border-radius: 6px; padding: 24px; width: min(340px, 90vw);
     box-shadow: 6px 6px 0 var(--shadow); animation: slideIn .2s ease;
   }
   @keyframes slideIn {
@@ -249,7 +217,7 @@
   }
   .modal h2 { font-size: 16px; font-weight: 900; margin-bottom: 16px; }
   .confirm-modal p { font-size: 14px; line-height: 1.7; margin-bottom: 18px; white-space: pre-wrap; }
-  .modal label { font-size: 12px; font-weight: 700; letter-spacing: .04em; display: block; margin-bottom: 4px; color: var(--muted); }
+  .modal label { font-size: 12px; font-weight: 700; display: block; margin-bottom: 4px; color: var(--muted); }
   .modal input[type=number] {
     font-family: inherit; font-size: 15px; width: 100%;
     padding: 8px 10px; border: 2px solid var(--border); border-radius: 4px;
@@ -274,7 +242,7 @@
   }
   @keyframes slideR {
     from { transform: translateX(40px); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
+    to   { transform: translateX(0); opacity: 1; }
   }
   .panel.open { display: flex; }
   .panel-header {
@@ -282,7 +250,7 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .panel-header h2 { font-size: 15px; font-weight: 900; }
-  .panel-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); line-height: 1; }
+  .panel-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); }
   .panel-body { flex: 1; overflow-y: auto; padding: 12px 16px; }
   .panel textarea {
     font-family: 'DM Mono', monospace; font-size: 12px; width: 100%;
@@ -293,7 +261,7 @@
   .panel-hint { font-size: 11px; color: var(--muted); margin-bottom: 8px; line-height: 1.6; }
   .panel-footer { padding: 12px 16px; border-top: 2px solid var(--border); display: flex; gap: 8px; }
 
-  .stats { text-align: center; font-size: 12px; color: var(--muted); margin-top: 20px; letter-spacing: .05em; }
+  .stats { text-align: center; font-size: 12px; color: var(--muted); margin-top: 20px; }
   .stats span { color: var(--ink); font-weight: 700; }
   .drag-hint { text-align: center; font-size: 11px; color: var(--border); margin-top: 8px; }
 
@@ -301,6 +269,7 @@
     body { background: #fff; padding: 8px; }
     .toolbar, .layout-bar, .modal-overlay, .panel, .drag-hint, .stats { display: none !important; }
     header p { display: none; }
+    .cell.empty-cell { display: none; }
   }
 </style>
 </head>
@@ -308,36 +277,21 @@
 
 <header>
   <h1>🪑 席替えシステム</h1>
-  <p>クリック → 番号入力 ／ ドラッグ → 席を自由に移動</p>
+  <p>クリック → 番号入力 ／ ドラッグ → 空きスペースに自由移動</p>
 </header>
 
-<!-- レイアウト設定 -->
 <div class="layout-bar">
-  <div class="layout-row center">
-    <div class="field">
-      <label for="inp-people">👥 人数</label>
-      <input type="number" id="inp-people" min="1" max="100" value="28">
-      <span>人</span>
-    </div>
-    <div class="field">
-      <label for="inp-cols">📐 列数</label>
-      <input type="number" id="inp-cols" min="1" max="20" value="8">
-      <span>列</span>
-    </div>
-    <button class="btn primary" onclick="applyLayout()">🔄 配置を更新</button>
+  <div class="field">
+    <label for="inp-people">👥 人数</label>
+    <input type="number" id="inp-people" min="1" max="100" value="28">
+    <span>人</span>
   </div>
-
-  <!-- 端数席の横位置調整（端数がある場合のみ表示） -->
-  <div class="offset-control" id="offset-control">
-    <span class="offset-label">端数席の位置</span>
-    <div class="offset-slider-wrap">
-      <span class="offset-icon" onclick="shiftOffset(-1)">◀ 左</span>
-      <input type="range" id="offset-slider" min="0" max="0" value="0" oninput="onSliderChange()">
-      <span class="offset-icon" onclick="shiftOffset(+1)">右 ▶</span>
-    </div>
-    <span class="offset-badge" id="offset-badge">中央</span>
+  <div class="field">
+    <label for="inp-cols">📐 列数</label>
+    <input type="number" id="inp-cols" min="1" max="20" value="8">
+    <span>列</span>
   </div>
-
+  <button class="btn primary" onclick="applyLayout()">🔄 配置を更新</button>
   <div class="layout-hint" id="layout-hint"></div>
 </div>
 
@@ -352,7 +306,7 @@
   <div class="classroom" id="classroom"></div>
 </div>
 
-<div class="drag-hint">💡 机をドラッグして並び替えできます（並び順も保存されます）</div>
+<div class="drag-hint">💡 机をドラッグして空きスペースに移動できます</div>
 <div class="stats" id="stats"></div>
 
 <!-- 番号入力モーダル -->
@@ -371,7 +325,7 @@
   </div>
 </div>
 
-<!-- 配置変更確認モーダル -->
+<!-- 配置変更確認 -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="confirm-modal">
     <p id="confirm-text"></p>
@@ -408,72 +362,53 @@
 const DESK_W = 82, DESK_H = 68, GAP = 8;
 
 // ── 状態 ──
-let seats  = [];
+// grid[r][c] = { hasSeat: bool, num: int|null }
+let grid   = [];   // 2Dグリッド
 let roster = {};
-// config.offset: 端数席の開始列オフセット（0 = 左端、max = 右端）
-// 中央がデフォルト: offset = floor((cols - remainder) / 2)
-let config = { people: 28, cols: 8, offset: null }; // null = 自動（中央）
-let currentSeatId = null;
+let config = { people: 28, cols: 8 };
+let currentCell = null; // { r, c }
 let pendingLayout = null;
 
-// ── 座標 ──
-const posToXY = (r, c) => ({ x: c * (DESK_W + GAP), y: r * (DESK_H + GAP) });
-const gridW   = (cols) => cols * DESK_W + (cols - 1) * GAP;
-const gridH   = () => seats.length ? (Math.max(...seats.map(s => s.r)) + 1) * DESK_H + Math.max(...seats.map(s => s.r)) * GAP : DESK_H;
+// ── 計算 ──
+function calcRows(people, cols) { return Math.ceil(people / cols); }
 
-// ── 端数計算 ──
-function getRemainder(people, cols) { return people % cols; }
-function getBaseRows(people, cols)  { return Math.floor(people / cols); }
-// offset の最大値（右端に寄せたとき）
-function getOffsetMax(cols, remainder) { return remainder > 0 ? cols - remainder : 0; }
-// デフォルト（中央）オフセット
-function defaultOffset(cols, remainder) { return Math.floor((cols - remainder) / 2); }
-
-// ── レイアウト計算 ──
-// offset: 端数行の先頭列（0〜offsetMax）
-function calcLayout(people, cols, offset) {
-  const baseRows  = getBaseRows(people, cols);
-  const remainder = getRemainder(people, cols);
-  if (offset === null || offset === undefined) offset = defaultOffset(cols, remainder);
-
-  const positions = [];
+// 初期配置：基本行 + 端数は中央
+function defaultGrid(people, cols) {
+  const rows     = calcRows(people, cols);
+  const baseRows = Math.floor(people / cols);
+  const rem      = people % cols;
+  const g = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => ({ hasSeat: false, num: null }))
+  );
   for (let r = 0; r < baseRows; r++)
     for (let c = 0; c < cols; c++)
-      positions.push({ r, c, extra: false });
-
-  if (remainder > 0) {
-    for (let i = 0; i < remainder; i++)
-      positions.push({ r: baseRows, c: offset + i, extra: true });
+      g[r][c].hasSeat = true;
+  if (rem > 0) {
+    const startCol = Math.floor((cols - rem) / 2);
+    for (let i = 0; i < rem; i++)
+      g[baseRows][startCol + i].hasSeat = true;
   }
-  return positions;
+  return g;
 }
 
 // ── 初期化 ──
 function init() {
   loadRoster();
   loadConfig();
-  loadSeats();
+  loadGrid();
   buildGrid();
-  updateControls();
+  updateHint();
   updateStats();
 }
 
-// ── レイアウト更新フロー ──
+// ── レイアウト更新 ──
 function applyLayout() {
   const people = parseInt(document.getElementById('inp-people').value);
   const cols   = parseInt(document.getElementById('inp-cols').value);
   if (isNaN(people) || people < 1 || isNaN(cols) || cols < 1) return;
   if (cols > people) { alert('列数は人数以下にしてください'); return; }
-
-  // 人数・列数が変わった場合はoffsetをリセット（中央に）
-  const rem = getRemainder(people, cols);
-  const newOffset = (people !== config.people || cols !== config.cols)
-    ? defaultOffset(cols, rem)
-    : config.offset;
-
-  pendingLayout = { people, cols, offset: newOffset };
-
-  const hasAssigned = seats.some(s => s.num !== null);
+  pendingLayout = { people, cols };
+  const hasAssigned = grid.some(row => row.some(c => c.num !== null));
   if (hasAssigned && (people !== config.people || cols !== config.cols)) {
     document.getElementById('confirm-text').textContent =
       `レイアウトを「${people}人・${cols}列」に変更します。\n現在の席の割り当てはどうしますか？`;
@@ -482,126 +417,101 @@ function applyLayout() {
     doApplyLayout(false);
   }
 }
-
 function closeConfirm() {
   document.getElementById('confirm-modal').classList.remove('open');
   pendingLayout = null;
 }
-
 function doApplyLayout(resetNums) {
   if (!pendingLayout) return;
   document.getElementById('confirm-modal').classList.remove('open');
-  const { people, cols, offset } = pendingLayout;
+  const { people, cols } = pendingLayout;
   pendingLayout = null;
 
-  const oldNums = resetNums ? [] : seats.filter(s => s.num !== null).map(s => s.num);
-  config = { people, cols, offset };
+  // 既存の番号を順番に収集
+  const oldNums = resetNums ? [] : collectNums();
 
-  const layout = calcLayout(people, cols, offset);
-  seats = layout.map((p, i) => ({ id: i, r: p.r, c: p.c, extra: p.extra, num: null }));
-  if (!resetNums) oldNums.forEach((n, i) => { if (i < seats.length) seats[i].num = n; });
+  config = { people, cols };
+  grid = defaultGrid(people, cols);
 
-  saveConfig(); saveSeats();
-  buildGrid(); updateControls(); updateStats();
-}
-
-// ── スライダー操作 ──
-function onSliderChange() {
-  const val = parseInt(document.getElementById('offset-slider').value);
-  applyOffsetOnly(val);
-}
-
-function shiftOffset(delta) {
-  const slider = document.getElementById('offset-slider');
-  const newVal = Math.min(parseInt(slider.max), Math.max(0, parseInt(slider.value) + delta));
-  slider.value = newVal;
-  applyOffsetOnly(newVal);
-}
-
-// offset だけ変えてグリッドを再描画（番号割り当ては保持）
-function applyOffsetOnly(offset) {
-  config.offset = offset;
-  const oldNums = seats.map(s => s.num);
-  const layout  = calcLayout(config.people, config.cols, offset);
-  seats = layout.map((p, i) => ({ id: i, r: p.r, c: p.c, extra: p.extra, num: oldNums[i] ?? null }));
-  saveConfig(); saveSeats();
-  buildGrid(); updateOffsetBadge(offset); updateStats();
-}
-
-// ── コントロール更新 ──
-function updateControls() {
-  document.getElementById('inp-people').value = config.people;
-  document.getElementById('inp-cols').value   = config.cols;
-
-  const rem = getRemainder(config.people, config.cols);
-  const ctrl = document.getElementById('offset-control');
-  if (rem === 0) {
-    ctrl.classList.remove('visible');
-  } else {
-    ctrl.classList.add('visible');
-    const max    = getOffsetMax(config.cols, rem);
-    const slider = document.getElementById('offset-slider');
-    slider.min   = 0;
-    slider.max   = max;
-    slider.value = config.offset ?? defaultOffset(config.cols, rem);
-    updateOffsetBadge(parseInt(slider.value));
+  // 番号を復元（席がある位置に順番に）
+  if (!resetNums) {
+    const seats = listSeats();
+    oldNums.forEach((n, i) => { if (i < seats.length) seats[i].num = n; });
   }
 
-  const baseRows = getBaseRows(config.people, config.cols);
-  const hint = rem === 0
-    ? `${config.cols}列 × ${baseRows}行 = ${config.people}席`
-    : `${config.cols}列 × ${baseRows}行 ＋ 端数${rem}席 = ${config.people}席`;
-  document.getElementById('layout-hint').textContent = hint;
+  saveConfig(); saveGrid();
+  buildGrid(); updateHint(); updateStats();
 }
 
-function updateOffsetBadge(offset) {
-  const rem = getRemainder(config.people, config.cols);
-  const max = getOffsetMax(config.cols, rem);
-  const center = defaultOffset(config.cols, rem);
-  let label;
-  if (offset === 0)      label = '左端';
-  else if (offset === max) label = '右端';
-  else if (offset === center) label = '中央';
-  else if (offset < center)   label = '左寄り';
-  else                         label = '右寄り';
-  document.getElementById('offset-badge').textContent = label;
+// 番号が入った席を順番に収集
+function collectNums() {
+  const nums = [];
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < grid[r].length; c++)
+      if (grid[r][c].hasSeat && grid[r][c].num !== null)
+        nums.push(grid[r][c].num);
+  return nums;
 }
 
-// ── グリッド構築 ──
+// 席があるセルを行列順に返す
+function listSeats() {
+  const seats = [];
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < grid[r].length; c++)
+      if (grid[r][c].hasSeat) seats.push(grid[r][c]);
+  return seats;
+}
+
+// ── グリッド描画 ──
 function buildGrid() {
   const classroom = document.getElementById('classroom');
   classroom.innerHTML = '';
-  const w = gridW(config.cols);
-  const h = gridH();
-  classroom.style.width  = w + 'px';
-  classroom.style.height = (h || DESK_H) + 'px';
-  const bb = document.getElementById('blackboard');
-  bb.style.width    = w + 'px';
-  bb.style.maxWidth = 'none';
-  seats.forEach(seat => classroom.appendChild(createDeskEl(seat)));
+  const cols = config.cols;
+  const rows = grid.length;
+  const w = cols * DESK_W + (cols - 1) * GAP;
+  classroom.style.gridTemplateColumns = `repeat(${cols}, ${DESK_W}px)`;
+  classroom.style.gap = GAP + 'px';
+  classroom.style.width = w + 'px';
+  document.getElementById('blackboard').style.cssText += `width:${w}px;max-width:none;`;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+      if (grid[r][c].hasSeat) {
+        const desk = makeDeskEl(r, c);
+        cell.appendChild(desk);
+      } else {
+        cell.classList.add('empty-cell');
+        setupDropCell(cell, r, c);
+      }
+      classroom.appendChild(cell);
+    }
+  }
 }
 
-function createDeskEl(seat) {
+function getCell(r, c) {
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+// ── 机要素生成 ──
+function makeDeskEl(r, c) {
   const desk = document.createElement('div');
-  desk.className = 'desk' + (seat.extra ? ' extra-seat' : '');
-  desk.id = 'desk-' + seat.id;
-  desk.style.zIndex = seat.id + 1;
-  const { x, y } = posToXY(seat.r, seat.c);
-  desk.style.left = x + 'px';
-  desk.style.top  = y + 'px';
-  refreshContent(desk, seat);
-  setupDrag(desk, seat);
-  desk.addEventListener('click', () => { if (!desk._dragged) openModal(seat.id); });
+  desk.className = 'desk';
+  refreshDeskContent(desk, grid[r][c]);
+  setupDeskInteraction(desk, r, c);
   return desk;
 }
 
-function refreshContent(desk, seat) {
+function refreshDeskContent(desk, cellData) {
   desk.innerHTML = '';
-  if (seat.num !== null) {
+  if (cellData.num !== null) {
     desk.classList.add('filled');
-    const b = document.createElement('div'); b.className = 'num-badge'; b.textContent = '#' + seat.num;
+    const b = document.createElement('div'); b.className = 'num-badge'; b.textContent = '#' + cellData.num;
     const n = document.createElement('div'); n.className = 'name';
-    n.textContent = roster[String(seat.num)] || '番号' + seat.num;
+    n.textContent = roster[String(cellData.num)] || '番号' + cellData.num;
     desk.append(b, n);
   } else {
     desk.classList.remove('filled');
@@ -610,95 +520,133 @@ function refreshContent(desk, seat) {
   }
 }
 
-function renderSeat(seat) {
-  const desk = document.getElementById('desk-' + seat.id);
-  if (desk) refreshContent(desk, seat);
+function refreshCellDesk(r, c) {
+  const cell = getCell(r, c);
+  if (!cell) return;
+  const desk = cell.querySelector('.desk');
+  if (desk) refreshDeskContent(desk, grid[r][c]);
 }
 
-// ── ドラッグ＆ドロップ ──
-function setupDrag(desk, seat) {
-  let sx, sy, ox, oy, dragging = false;
+// ── ドラッグ操作 ──
+function setupDeskInteraction(desk, r, c) {
+  let startX, startY, dragging = false, floating = null;
 
-  function start(cx, cy) {
-    desk._dragged = false; dragging = false;
-    sx = cx; sy = cy;
-    ox = parseInt(desk.style.left); oy = parseInt(desk.style.top);
-    desk.style.zIndex = 999;
+  function onStart(cx, cy) {
+    dragging = false;
+    desk._dragged = false;
+    startX = cx; startY = cy;
   }
-  function move(cx, cy) {
-    const dx = cx - sx, dy = cy - sy;
-    if (!dragging && Math.hypot(dx, dy) > 6) { dragging = true; desk._dragged = true; desk.classList.add('dragging'); }
-    if (!dragging) return;
-    desk.style.left = (ox + dx) + 'px';
-    desk.style.top  = (oy + dy) + 'px';
-    document.querySelectorAll('.desk.drop-target').forEach(d => d.classList.remove('drop-target'));
-    const t = findTarget(desk, cx, cy);
-    if (t) t.classList.add('drop-target');
-  }
-  function end(cx, cy) {
-    if (!dragging) { desk.style.zIndex = seat.id + 1; return; }
-    desk.classList.remove('dragging');
-    document.querySelectorAll('.desk.drop-target').forEach(d => d.classList.remove('drop-target'));
-    const t = findTarget(desk, cx, cy);
-    if (t) {
-      const tid = parseInt(t.id.replace('desk-', ''));
-      const ts  = seats[tid];
-      [seat.r, ts.r] = [ts.r, seat.r];
-      [seat.c, ts.c] = [ts.c, seat.c];
-      [seat.extra, ts.extra] = [ts.extra, seat.extra];
-      const { x: x1, y: y1 } = posToXY(seat.r, seat.c);
-      const { x: x2, y: y2 } = posToXY(ts.r,   ts.c);
-      desk.style.left = x1 + 'px'; desk.style.top = y1 + 'px';
-      t.style.left    = x2 + 'px'; t.style.top    = y2 + 'px';
-      desk.classList.toggle('extra-seat', !!seat.extra);
-      t.classList.toggle('extra-seat',    !!ts.extra);
-    } else {
-      const { x, y } = posToXY(seat.r, seat.c);
-      desk.style.left = x + 'px'; desk.style.top = y + 'px';
+
+  function onMove(cx, cy) {
+    const dx = cx - startX, dy = cy - startY;
+    if (!dragging && Math.hypot(dx, dy) > 6) {
+      dragging = true;
+      desk._dragged = true;
+      desk.classList.add('drag-ghost');
+      document.getElementById('classroom').classList.add('dragging-active');
+
+      // フローティング要素を作成
+      floating = document.createElement('div');
+      floating.className = 'desk-floating';
+      floating.innerHTML = desk.innerHTML;
+      document.body.appendChild(floating);
     }
-    desk.style.zIndex = seat.id + 1;
-    saveSeats(); dragging = false;
+    if (!dragging) return;
+
+    floating.style.left = (cx - DESK_W / 2) + 'px';
+    floating.style.top  = (cy - DESK_H / 2) + 'px';
+
+    // ドロップ候補をハイライト
+    document.querySelectorAll('.empty-cell.drop-hover').forEach(el => el.classList.remove('drop-hover'));
+    const target = getDropTarget(cx, cy);
+    if (target) target.classList.add('drop-hover');
+  }
+
+  function onEnd(cx, cy) {
+    if (!dragging) return;
+
+    desk.classList.remove('drag-ghost');
+    document.getElementById('classroom').classList.remove('dragging-active');
+    document.querySelectorAll('.empty-cell.drop-hover').forEach(el => el.classList.remove('drop-hover'));
+    if (floating) { floating.remove(); floating = null; }
+
+    const target = getDropTarget(cx, cy);
+    if (target) {
+      const tr = parseInt(target.dataset.r), tc = parseInt(target.dataset.c);
+      // grid 更新：席を移動
+      grid[tr][tc] = { hasSeat: true, num: grid[r][c].num };
+      grid[r][c]   = { hasSeat: false, num: null };
+
+      // DOM更新：元セルを空に、先セルに机を追加
+      const origCell = getCell(r, c);
+      origCell.innerHTML = '';
+      origCell.classList.add('empty-cell');
+      setupDropCell(origCell, r, c);
+
+      target.classList.remove('empty-cell');
+      const newDesk = makeDeskEl(tr, tc);
+      target.appendChild(newDesk);
+
+      // r, c を新しい位置に更新
+      r = tr; c = tc;
+
+      saveGrid(); updateStats();
+    }
+
+    dragging = false;
   }
 
   desk.addEventListener('mousedown', e => {
-    if (e.button !== 0) return; e.preventDefault(); start(e.clientX, e.clientY);
-    const mm = e2 => move(e2.clientX, e2.clientY);
-    const mu = e2 => { end(e2.clientX, e2.clientY); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+    if (e.button !== 0) return; e.preventDefault(); onStart(e.clientX, e.clientY);
+    const mm = e2 => onMove(e2.clientX, e2.clientY);
+    const mu = e2 => { onEnd(e2.clientX, e2.clientY); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
     window.addEventListener('mousemove', mm); window.addEventListener('mouseup', mu);
   });
-  desk.addEventListener('touchstart', e => { const t = e.touches[0]; start(t.clientX, t.clientY); }, { passive: true });
-  desk.addEventListener('touchmove',  e => { const t = e.touches[0]; move(t.clientX, t.clientY); if (dragging) e.preventDefault(); }, { passive: false });
-  desk.addEventListener('touchend',   e => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); });
+  desk.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
+  desk.addEventListener('touchmove',  e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); if (dragging) e.preventDefault(); }, { passive: false });
+  desk.addEventListener('touchend',   e => { const t = e.changedTouches[0]; onEnd(t.clientX, t.clientY); });
+
+  desk.addEventListener('click', () => {
+    if (desk._dragged) { desk._dragged = false; return; }
+    openModal(r, c);
+  });
 }
 
-function findTarget(dragDesk, cx, cy) {
-  const rect = document.getElementById('classroom').getBoundingClientRect();
-  const mx = cx - rect.left, my = cy - rect.top;
+// 空きセルへのドロップ設定
+function setupDropCell(cell, r, c) {
+  cell.dataset.r = r;
+  cell.dataset.c = c;
+}
+
+// カーソル位置から最寄りの空きセルを取得
+function getDropTarget(cx, cy) {
+  const cells = document.querySelectorAll('.cell.empty-cell');
   let best = null, bestD = Infinity;
-  seats.forEach(s => {
-    if ('desk-' + s.id === dragDesk.id) return;
-    const { x, y } = posToXY(s.r, s.c);
-    const d = Math.hypot(mx - x - DESK_W / 2, my - y - DESK_H / 2);
-    if (d < DESK_W * 0.75 && d < bestD) { bestD = d; best = document.getElementById('desk-' + s.id); }
+  cells.forEach(cell => {
+    const rect = cell.getBoundingClientRect();
+    const mx = rect.left + rect.width / 2;
+    const my = rect.top  + rect.height / 2;
+    const d  = Math.hypot(cx - mx, cy - my);
+    if (d < (DESK_W * 0.8) && d < bestD) { bestD = d; best = cell; }
   });
   return best;
 }
 
 // ── モーダル ──
-function openModal(id) {
-  currentSeatId = id;
-  const s = seats[id];
+function openModal(r, c) {
+  currentCell = { r, c };
+  const cellData = grid[r][c];
   document.getElementById('modal-title').textContent =
-    `席（${s.num !== null ? '#' + s.num + ' ' + (roster[String(s.num)] || '') : '空席'}）`;
+    `席（${cellData.num !== null ? '#' + cellData.num + ' ' + (roster[String(cellData.num)] || '') : '空席'}）`;
   const inp = document.getElementById('num-input');
   inp.max   = config.people;
-  inp.value = s.num !== null ? s.num : '';
+  inp.value = cellData.num !== null ? cellData.num : '';
   previewName();
   document.getElementById('modal').classList.add('open');
   setTimeout(() => inp.focus(), 50);
   inp.onkeydown = e => { if (e.key === 'Enter') confirmSeat(); if (e.key === 'Escape') closeModal(); };
 }
-function closeModal() { document.getElementById('modal').classList.remove('open'); currentSeatId = null; }
+function closeModal() { document.getElementById('modal').classList.remove('open'); currentCell = null; }
 
 function previewName() {
   const val  = document.getElementById('num-input').value.trim();
@@ -706,9 +654,19 @@ function previewName() {
   if (!val) { prev.textContent = '—'; return; }
   const n = parseInt(val);
   if (isNaN(n) || n < 1 || n > config.people) { prev.textContent = `⚠ 1〜${config.people}の番号を入力`; return; }
-  const dup = seats.find(s => s.id !== currentSeatId && s.num === n);
-  if (dup) { prev.textContent = `⚠ #${n} はすでに別の席に配置済み`; return; }
+  // 重複チェック
+  const dup = findCellWithNum(n);
+  if (dup && !(dup.r === currentCell.r && dup.c === currentCell.c)) {
+    prev.textContent = `⚠ #${n} はすでに別の席に配置済み`; return;
+  }
   prev.textContent = roster[String(n)] ? `#${n} ${roster[String(n)]}` : `#${n}（名前未登録）`;
+}
+
+function findCellWithNum(n) {
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < grid[r].length; c++)
+      if (grid[r][c].num === n) return { r, c };
+  return null;
 }
 
 function confirmSeat() {
@@ -716,19 +674,21 @@ function confirmSeat() {
   if (!val) { clearSeat(); return; }
   const n = parseInt(val);
   if (isNaN(n) || n < 1 || n > config.people) return;
-  if (seats.find(s => s.id !== currentSeatId && s.num === n)) return;
-  seats[currentSeatId].num = n;
-  renderSeat(seats[currentSeatId]);
-  const d = document.getElementById('desk-' + currentSeatId);
-  d.classList.remove('highlight'); void d.offsetWidth; d.classList.add('highlight');
-  saveSeats(); updateStats(); closeModal();
+  const dup = findCellWithNum(n);
+  if (dup && !(dup.r === currentCell.r && dup.c === currentCell.c)) return;
+  grid[currentCell.r][currentCell.c].num = n;
+  refreshCellDesk(currentCell.r, currentCell.c);
+  const cell = getCell(currentCell.r, currentCell.c);
+  const desk = cell?.querySelector('.desk');
+  if (desk) { desk.classList.remove('highlight'); void desk.offsetWidth; desk.classList.add('highlight'); }
+  saveGrid(); updateStats(); closeModal();
 }
 
 function clearSeat() {
-  if (currentSeatId === null) return;
-  seats[currentSeatId].num = null;
-  renderSeat(seats[currentSeatId]);
-  saveSeats(); updateStats(); closeModal();
+  if (!currentCell) return;
+  grid[currentCell.r][currentCell.c].num = null;
+  refreshCellDesk(currentCell.r, currentCell.c);
+  saveGrid(); updateStats(); closeModal();
 }
 
 // ── 名簿 ──
@@ -744,54 +704,73 @@ function saveRoster() {
     line = line.trim(); if (!line) return;
     const sep = line.includes('\t') ? '\t' : ',';
     const i = line.indexOf(sep); if (i < 1) return;
-    const num = line.slice(0, i).trim(), name = line.slice(i + 1).trim();
+    const num = line.slice(0,i).trim(), name = line.slice(i+1).trim();
     if (num && name) r[num] = name;
   });
   roster = r;
   localStorage.setItem('roster_v1', JSON.stringify(roster));
-  seats.forEach(s => renderSeat(s));
+  // 全机を再描画
+  for (let r2 = 0; r2 < grid.length; r2++)
+    for (let c = 0; c < grid[r2].length; c++)
+      if (grid[r2][c].hasSeat) refreshCellDesk(r2, c);
   updateStats(); closePanel();
 }
 
 // ── 統計 ──
 function updateStats() {
-  const f = seats.filter(s => s.num !== null).length;
-  document.getElementById('stats').innerHTML = `着席: <span>${f}</span> / <span>${seats.length}</span> 席`;
+  const total  = grid.flat().filter(c => c.hasSeat).length;
+  const filled = grid.flat().filter(c => c.hasSeat && c.num !== null).length;
+  document.getElementById('stats').innerHTML = `着席: <span>${filled}</span> / <span>${total}</span> 席`;
+}
+
+function updateHint() {
+  const rows = calcRows(config.people, config.cols);
+  const rem  = config.people % config.cols;
+  document.getElementById('layout-hint').textContent =
+    rem === 0
+      ? `${config.cols}列 × ${rows}行 = ${config.people}席`
+      : `${config.cols}列 × ${rows}行のグリッド（${config.people}席 ＋ 空き${config.cols * rows - config.people}枠）`;
+  document.getElementById('inp-people').value = config.people;
+  document.getElementById('inp-cols').value   = config.cols;
 }
 
 // ── リセット ──
 function confirmReset() {
   if (!confirm('全ての席の割り当てをリセットしますか？\n（名簿・並び順はそのまま保持されます）')) return;
-  seats.forEach(s => s.num = null);
-  seats.forEach(s => renderSeat(s));
-  saveSeats(); updateStats();
+  for (let r = 0; r < grid.length; r++)
+    for (let c = 0; c < grid[r].length; c++)
+      grid[r][c].num = null;
+  buildGrid(); updateStats();
+  saveGrid();
 }
 
 // ── ストレージ ──
 function saveConfig() {
-  localStorage.setItem('layout_config_v2', JSON.stringify(config));
+  localStorage.setItem('layout_config_v3', JSON.stringify(config));
 }
 function loadConfig() {
   try {
-    const c = JSON.parse(localStorage.getItem('layout_config_v2') || 'null');
-    if (c?.people && c?.cols) config = { people: c.people, cols: c.cols, offset: c.offset ?? null };
+    const c = JSON.parse(localStorage.getItem('layout_config_v3') || 'null');
+    if (c?.people && c?.cols) config = c;
   } catch(e) {}
 }
-function saveSeats() {
-  localStorage.setItem('seats_v2', JSON.stringify({
-    nums:      seats.map(s => s.num),
-    positions: seats.map(s => ({ r: s.r, c: s.c, extra: s.extra }))
-  }));
+function saveGrid() {
+  // hasSeat と num だけ保存
+  const data = grid.map(row => row.map(c => ({ h: c.hasSeat ? 1 : 0, n: c.num })));
+  localStorage.setItem('grid_v1', JSON.stringify(data));
 }
-function loadSeats() {
-  const rem    = getRemainder(config.people, config.cols);
-  const offset = config.offset ?? defaultOffset(config.cols, rem);
-  const layout = calcLayout(config.people, config.cols, offset);
-  seats = layout.map((p, i) => ({ id: i, r: p.r, c: p.c, extra: p.extra, num: null }));
+function loadGrid() {
+  // まずデフォルトで生成
+  grid = defaultGrid(config.people, config.cols);
   try {
-    const sv = JSON.parse(localStorage.getItem('seats_v2') || 'null');
-    if (sv?.nums)      sv.nums.forEach((n, i)      => { if (i < seats.length) seats[i].num = n; });
-    if (sv?.positions) sv.positions.forEach((p, i) => { if (i < seats.length && p) { seats[i].r = p.r; seats[i].c = p.c; seats[i].extra = !!p.extra; } });
+    const saved = JSON.parse(localStorage.getItem('grid_v1') || 'null');
+    if (saved && saved.length === grid.length && saved[0].length === grid[0].length) {
+      for (let r = 0; r < grid.length; r++)
+        for (let c = 0; c < grid[r].length; c++) {
+          grid[r][c].hasSeat = saved[r][c].h === 1;
+          grid[r][c].num     = saved[r][c].n ?? null;
+        }
+    }
   } catch(e) {}
 }
 function loadRoster() {
@@ -801,7 +780,7 @@ function loadRoster() {
 // ── イベント ──
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target.id === 'confirm-modal') closeConfirm(); });
-['inp-people', 'inp-cols'].forEach(id => {
+['inp-people','inp-cols'].forEach(id => {
   document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') applyLayout(); });
 });
 
